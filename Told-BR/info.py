@@ -14,7 +14,7 @@ print(f"\nCOLUNAS DISPONÍVEIS")
 print(base_told.columns.tolist()) # lista com os nomes das colunas
 
 
-print(f"\nDISTRIBUIÇÃO DA CLASSE BRUTA ({"misogyny".upper()})") # letra maiúscula
+print(f"\nDISTRIBUIÇÃO DA CLASSE BRUTA ({'misogyny'.upper()})") # letra maiúscula
 print(base_told["misogyny"].value_counts()) # quantas vezes cada valor aparece
 print("\nPERCENTUAL BRUTO") 
 print(base_told["misogyny"].value_counts(normalize=True) * 100) # proporção e em seguida porcentagem
