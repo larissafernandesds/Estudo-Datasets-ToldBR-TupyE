@@ -2,110 +2,60 @@
 
 import pandas as pd
 
-# carrega os arquivos do diretório 
-train_df = pd.read_csv("TupyE/multilabel_train.csv")
-test_df = pd.read_csv("TupyE/multilabel_test.csv")
+# carrega os arquivos do diretório
+treino_tupye = pd.read_csv("TupyE/multilabel_train.csv")
+teste_tupye = pd.read_csv("TupyE/multilabel_test.csv")
 
-print(f" Total de amostras de TREINO: {len(train_df)}")
-print(f" Total de amostras de TESTE: {len(test_df)}")
+print("=" * 50)
+print("                     TuPyE")
+print("=" * 50)
 
-print("\n--- TODAS AS COLUNAS DISPONÍVEIS ---")
-print(train_df.columns.tolist())
+# n° de linhas
+print(f"\nTotal de amostras de TREINO: {len(treino_tupye)}")
+print(f"Total de amostras de TESTE: {len(teste_tupye)}")
 
-print("\n--- PRIMEIRAS 2 LINHAS DO TREINO ---")
-print(train_df.head(2))
 
-print("\n--- MISOGYNY NO TREINO ---")
-print(train_df["misogyny"].value_counts().sort_index())
+# lista com os nomes das colunas
+print("\nCOLUNAS DISPONÍVEIS")
+print(treino_tupye.columns.tolist())
 
-print("\n--- PERCENTUAL DE CADA VALOR - TREINO  ---")
-print(train_df["misogyny"].value_counts(normalize=True).sort_index() * 100)
 
-print("\n--- MISOGYNY NO TESTE ---")
-print(test_df["misogyny"].value_counts().sort_index())
+# distribuição da classe no treino
+# proporção e em seguida porcentagem
+print("\nDISTRIBUIÇÃO DA CLASSE (MISOGYNY) - TREINO")
+print(f"{treino_tupye['misogyny'].value_counts()} {treino_tupye['misogyny'].value_counts(normalize=True).sort_index() * 100}") #quantas vezes cada valor aparece
 
-print("\n--- PERCENTUAL DE CADA VALOR - TESTE ---")
-print(test_df["misogyny"].value_counts(normalize=True).sort_index() * 100)
 
-print("\n--- TIPOS DAS COLUNAS ---")
-print(train_df.dtypes)
+# distribuição da classe no teste
+# proporção e em seguida porcentagem
+print("\nDISTRIBUIÇÃO DA CLASSE (MISOGYNY) - TESTE")
+print(f"{teste_tupye['misogyny'].value_counts()} {teste_tupye['misogyny'].value_counts(normalize=True).sort_index() * 100}") #quantas vezes cada valor aparece
 
-print("\n--- VALORES AUSENTES ---")
-print(train_df.isnull().sum())
 
-# duplicados dentro do treino
-print("Duplicados no treino:",
-      train_df["text"].duplicated().sum())
+# integridade dos dados
+print("\nINTEGRIDADE DOS DADOS")
+print(f"Valores ausentes em 'text' no treino: {treino_tupye['text'].isnull().sum()}")
+print(f"Valores ausentes em 'text' no teste: {teste_tupye['text'].isnull().sum()}")
 
-# duplicados dentro do teste
-print("Duplicados no teste:",
-      test_df["text"].duplicated().sum())
+# verifica se o texto já apareceu anteriormente. A primeira ocorrência de cada texto recebe False. As ocorrências seguintes recebem True.
+print(f"Textos duplicados no treino: {treino_tupye.duplicated(subset=['text']).sum()}")
+print(f"Textos duplicados no teste: {teste_tupye.duplicated(subset=['text']).sum()}")
 
-# textos iguais entre treino e teste
-repetidos = set(train_df["text"]) & set(test_df["text"])
-
-print("Repetidos entre treino e teste:",
-      len(repetidos))
-
-# total de amostras
-total = len(train_df) + len(test_df)
-
-# percentual de treino e teste
-percentual_treino = len(train_df) / total * 100
-percentual_teste = len(test_df) / total * 100
-
-print(f"Total de amostras: {total}")
-print(f"Treino: {len(train_df)} ({percentual_treino:.2f}%)")
-print(f"Teste: {len(test_df)} ({percentual_teste:.2f}%)")
 
 # textos que aparecem tanto no treino quanto no teste
-repetidos = set(train_df["text"]) & set(test_df["text"])
-
-print(f"Quantidade de textos repetidos entre treino e teste: {len(repetidos)}")
-
-# mostrar alguns exemplos
-for texto in list(repetidos)[:10]:
-    print("\n---")
-    print(texto)
-
-    print("Treino:")
-    print(train_df[train_df["text"] == texto][["misogyny", "researcher", "year", "source"]])
-
-    print("Teste:")
-    print(test_df[test_df["text"] == texto][["misogyny", "researcher", "year", "source"]])
+repetidos = set(treino_tupye["text"]) & set(teste_tupye["text"])
+print(f"Textos repetidos entre treino e teste: {len(repetidos)}")
 
 
-# verificar os textos que aparecem nos dois conjuntos
-# e possuem rótulos diferentes
+# total de amostras e proporção treino/teste
+total = len(treino_tupye) + len(teste_tupye)
+percentual_treino = len(treino_tupye) / total * 100
+percentual_teste = len(teste_tupye) / total * 100
 
-conflitos = []
+print("\n" + "=" * 50)
+print("              DIVISÃO DA BASE")
+print("=" * 50)
 
-for texto in repetidos:
-    rotulos_treino = set(
-        train_df[train_df["text"] == texto]["misogyny"]
-    )
-
-    rotulos_teste = set(
-        test_df[test_df["text"] == texto]["misogyny"]
-    )
-
-    if rotulos_treino != rotulos_teste:
-        conflitos.append(texto)
-
-print("Textos duplicados entre treino e teste:", len(repetidos))
-print("Textos duplicados com conflito de rótulo:", len(conflitos))
-
-print("\n--- EXEMPLOS DE CONFLITOS ---")
-
-for texto in conflitos[:20]:
-    print("\nTexto:", texto)
-
-    print("Treino:")
-    print(train_df[train_df["text"] == texto][
-        ["misogyny", "researcher", "year", "source"]
-    ])
-
-    print("Teste:")
-    print(test_df[test_df["text"] == texto][
-        ["misogyny", "researcher", "year", "source"]
-    ])
+print(f"Total de amostras: {total}")
+print(f"Treino: {len(treino_tupye)} ({percentual_treino:.2f}%)")
+print(f"Teste: {len(teste_tupye)} ({percentual_teste:.2f}%)")
