@@ -42,6 +42,12 @@ print(f"Textos duplicados no treino: {treino_tupye.duplicated(subset=['text']).s
 print(f"Textos duplicados no teste: {teste_tupye.duplicated(subset=['text']).sum()}")
 
 
+miso_treino = treino_tupye[treino_tupye["misogyny"] == 1]
+print(f"duplicados na misoginia (treino): {miso_treino.duplicated(subset=['text']).sum()}")
+miso_treino = teste_tupye[teste_tupye["misogyny"] == 1]
+print(f"duplicados na misoginia (teste): {miso_treino.duplicated(subset=['text']).sum()}")
+
+
 # textos que aparecem tanto no treino quanto no teste
 repetidos = set(treino_tupye["text"]) & set(teste_tupye["text"])
 print(f"Textos repetidos entre treino e teste: {len(repetidos)}")

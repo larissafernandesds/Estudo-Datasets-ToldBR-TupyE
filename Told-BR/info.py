@@ -25,6 +25,8 @@ print("\nINTEGRIDADE DOS DADOS")
 print(f"Valores ausentes em 'text': {base_told['text'].isnull().sum()}")
 print(f"Textos duplicados no dataset: {base_told.duplicated(subset=['text']).sum()}") # verifica se o texto já apareceu anteriormente. A primeira ocorrência de cada texto recebe False. As ocorrências seguintes recebem True.
 
+told_miso = base_told[base_told["misogyny"] >= 1]
+print(f"duplicados na misoginia: {told_miso.duplicated(subset=['text']).sum()}")
 
 # 1 ou + anotadores (Misógino) | 0  (Não Misógino)
 misoginia_um_ou_mais = base_told["misogyny"] >= 1.0 # Falsos e Verdadeiros
