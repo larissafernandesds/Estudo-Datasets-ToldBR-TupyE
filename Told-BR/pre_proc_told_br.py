@@ -1,5 +1,7 @@
-import re
-import nltk
+# PROBELMA DE ENCODING/EMOJI/COREANO ... Tirar?
+
+import re #regex
+import nltk #pln 
 import pandas as pd
 from nltk.corpus import stopwords as nltk_stopwords
 
@@ -9,60 +11,66 @@ try:
 except LookupError:
     nltk.download("stopwords")
 
-stop_words_pt = set(nltk_stopwords.words("portuguese"))
+stop_words_pt = set(nltk_stopwords.words("portuguese")) # set ao inves de lista com as stopwords
 
+###############################################################################
 
-def pre_processar_told(texto: str, remover_stopwords: bool = False) -> str:
-    if not isinstance(texto, str):
+# função de pre-processamento textual
+def pre_processar_told(texto: str, remover_stopwords: bool = False) -> str: # retirar ou não?? (ele tira o não?)
+
+    if not isinstance(texto, str): # garante que dado é str
         return ""
 
-    # lowercase
+    # lowercase -> minúsculas
     texto = texto.lower()
 
-    # remoção de URLs, e-mails, menções e hashtags
-    texto = re.sub(r"http\S+|www\.\S+", "", texto)
-    texto = re.sub(r"\S+@\S+\.\S+", "", texto)
-    texto = re.sub(r"@\w+", "", texto)
-    texto = re.sub(r"#\w+", "", texto)
+    # eemoção de URLs, e-mails, menções e hashtags -> re.sub(padrão, substituto, texto)
+    texto = re.sub(r"http\S+|www\.\S+", "", texto) # URL's (que começam com http, https ou www)
+    texto = re.sub(r"\S+@\S+\.\S+", "", texto) # emails
+    texto = re.sub(r"@[A-Za-z0-9_.-]+", "", texto)  # menções (@ inclui pontos e hífens)
+    texto = re.sub(r"#[A-Za-z0-9_.-]+", "", texto)  # Hashtags
+    texto = re.sub(r"[^\w\s]", " ", texto) # pontuação, caracteres especiais e emojis
+    texto = re.sub(r"_", " ", texto) # remove o caractere de underline explicitamente
+    texto = re.sub(r"\s+", " ", texto).strip() # espaços excedentes
 
-    # pontuação e especiais (MANTÉM NÚMEROS: \d e \w)
-    texto = re.sub(r"[^\w\s]", " ", texto)
-    texto = re.sub(r"_", " ", texto)
-
-    # espaços excedentes
-    texto = re.sub(r"\s+", " ", texto).strip()
-
-    # stopwords opcional
+    # stopwords (parâmetro como True)
     if remover_stopwords:
         palavras = texto.split()
         texto = " ".join([p for p in palavras if p not in stop_words_pt])
 
     return texto
 
+###############################################################################
 
-# CARREGAMENTO E LIMPEZA DE INTEGRIDADE
+# carregamento e limpeza
+base_told = pd.read_csv("Told-BR/told_br.csv")
 
-# 
-told_df = pd.read_csv("Told-BR/told_br.csv")
+# binariza o rótulo: se a coluna 'misogyny' tiver valor >= 1.0), vira 1; senão, 0
+base_told["misogyny_binary"] = (base_told["misogyny"] >= 1.0).astype(int)
 
-# remover duplicatas globais de texto
-told_clean = told_df.drop_duplicates(subset=["text"], keep="first").copy()
 
-# binarização da classe de misoginia (Regra: >= 1 anotador vira classe 1)
-told_clean["misogyny_binary"] = (told_clean["misogyny"] >= 1.0).astype(int)
+# PRÉ-PROCESSAMENTO TEXTUAL
 
-# PRÉ-PROCESSAMENTO TEXTUAL 
-told_clean["text_clean"] = told_clean["text"].apply(
+# sobrescreve a coluna 'text' com o texto limpo, aplica função a cada linha
+base_told["text"] = base_told["text"].apply(
     lambda x: pre_processar_told(x, remover_stopwords=False)
-)
+    )
 
 # remover registros que ficaram vazios após a limpeza
-told_clean = told_clean[told_clean["text_clean"] != ""].copy()
+told_clean = base_told[told_clean["text"] != ""].copy()
 
-# SALVAR DADOS TRATADOS
-told_clean.to_csv("told_br_clean.csv", index=False)
+# agrupa os textos iguais e pega a maior nota de misoginia atribuída a ele
+told_clean = base_told.groupby("text", as_index=False).agg({"misogyny": "max", "misogyny_binary": "max"})
 
-print("=== ToLD-Br Processado com Sucesso ===")
+# deixar só essas colunas: text, misogyny e misogyny_binary
+colunas_desejadas = ["text", "misogyny", "misogyny_binary"]
+told_clean = told_clean[colunas_desejadas].copy()
+
+# salvar dados tratados dentro da pasta Told-BR
+told_clean.to_csv("Told-BR/told_br_clean.csv", index=False)
+
+# prints
+print("ToLD-Br Processado com Sucesso!!")
 print(f"Total de Amostras Limpas: {len(told_clean)}")
 print(f"Distribuição da Classe Misoginia:")
 print(told_clean["misogyny_binary"].value_counts())
