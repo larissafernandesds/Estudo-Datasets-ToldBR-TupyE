@@ -56,11 +56,11 @@ base_told["text"] = base_told["text"].apply(
     lambda x: pre_processar_told(x, remover_stopwords=False)
     )
 
-# remover registros que ficaram vazios após a limpeza
-told_clean = base_told[told_clean["text"] != ""].copy()
+# remove registros que ficaram vazios após a limpeza
+told_clean = base_told[base_told["text"] != ""].copy()
 
-# agrupa os textos iguais e pega a maior nota de misoginia atribuída a ele
-told_clean = base_told.groupby("text", as_index=False).agg({"misogyny": "max", "misogyny_binary": "max"})
+# agrupa os textos iguais e pega a maior nota de misoginia atribuída a ele e o maior valor binário
+told_clean = told_clean.groupby("text", as_index=False).agg({"misogyny": "max", "misogyny_binary": "max"})
 
 # deixar só essas colunas: text, misogyny e misogyny_binary
 colunas_desejadas = ["text", "misogyny", "misogyny_binary"]
