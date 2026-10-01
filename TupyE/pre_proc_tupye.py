@@ -41,7 +41,6 @@ def pre_processar_tupye(texto: str, remover_stopwords: bool = False) -> str:
 
 
 # CARREGAMENTO E LIMPEZA DE INTEGRIDADE
-# Substitua pelos caminhos reais dos seus arquivos brutos
 train_df = pd.read_csv("TupyE/multilabel_train.csv")
 test_df = pd.read_csv("TupyE/multilabel_test.csv")
 
